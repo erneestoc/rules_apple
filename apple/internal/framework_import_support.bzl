@@ -89,7 +89,7 @@ def _cc_info_with_dependencies(
 
     public_hdrs = []
     public_hdrs.extend(header_imports)
-    public_hdrs.extend(swiftmodule_imports)
+    # public_hdrs.extend(swiftmodule_imports)
     public_hdrs.extend(swiftinterface_imports)
     (compilation_context, _compilation_outputs) = cc_common.compile(
         name = label.name,
