@@ -578,6 +578,31 @@ def _apple_dynamic_xcframework_import_impl(ctx):
                 swiftinterface_files = xcframework_library.swift_module_interfaces,
             ),
         )
+    elif xcframework_library.swiftmodule:
+        # Prebuilt binary `.swiftmodule` (no `.swiftinterface`). Surface the
+        # module via SwiftInfo so it participates in the explicit Swift module
+        # map and the swiftmodule file is a proper action input — instead of
+        # relying on `swift.headers_always_action_inputs` to drag it in via
+        # cc textual_hdrs. The framework's clang module map and headers are
+        # folded into the same Module context (as the Clang side) so that
+        # `import <Module>` resolves both halves without a separate
+        # SwiftInteropInfo.
+        swift_toolchain = swift_common.get_toolchain(ctx, exec_group = _SWIFT_EXEC_GROUP)
+        providers.append(
+            framework_import_support.swift_info_from_swiftmodule(
+                actions = actions,
+                ctx = ctx,
+                deps = deps,
+                disabled_features = disabled_features,
+                features = features,
+                framework_includes = xcframework_library.framework_includes,
+                hdrs = xcframework_library.headers,
+                module_map = xcframework_library.clang_module_map,
+                module_name = xcframework.library_name,
+                swift_toolchain = swift_toolchain,
+                swiftmodule = xcframework_library.swiftmodule[0],
+            ),
+        )
     else:
         # Create SwiftInteropInfo provider for swift_clang_module_aspect
         swift_interop_info = framework_import_support.swift_interop_info_with_dependencies(
@@ -727,6 +752,32 @@ def _apple_static_xcframework_import_impl(ctx):
                 rule_label = label,
                 swift_toolchain = swift_toolchain,
                 swiftinterface_files = xcframework_library.swift_module_interfaces,
+            ),
+        )
+    elif xcframework_library.swiftmodule:
+        # Prebuilt binary `.swiftmodule` (no `.swiftinterface`). Surface the
+        # module via SwiftInfo so it participates in the explicit Swift module
+        # map and the swiftmodule file is a proper action input — instead of
+        # relying on `swift.headers_always_action_inputs` to drag it in via
+        # cc textual_hdrs. The framework's clang module map and headers are
+        # folded into the same Module context (as the Clang side) so that
+        # `import <Module>` resolves both halves without a separate
+        # SwiftInteropInfo.
+        swift_toolchain = swift_common.get_toolchain(ctx, exec_group = _SWIFT_EXEC_GROUP)
+        providers.append(
+            framework_import_support.swift_info_from_swiftmodule(
+                actions = actions,
+                ctx = ctx,
+                deps = deps,
+                disabled_features = disabled_features,
+                features = features,
+                framework_includes = xcframework_library.framework_includes,
+                hdrs = xcframework_library.headers,
+                includes = xcframework_library.includes,
+                module_map = xcframework_library.clang_module_map,
+                module_name = xcframework.library_name,
+                swift_toolchain = swift_toolchain,
+                swiftmodule = xcframework_library.swiftmodule[0],
             ),
         )
     else:
